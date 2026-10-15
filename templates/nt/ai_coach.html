@@ -1,0 +1,194 @@
+{% extends 'nt/base.html' %}
+{% block title %}AI Coach · NutriTrack{% endblock %}
+{% block content %}
+<header class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <p class="text-sm text-mute">Coach</p>
+    <h1 class="text-2xl font-semibold text-forest">AI coach</h1>
+  </div>
+  {% if gemini_configured %}
+  <span class="inline-flex items-center gap-2 rounded-full bg-forest-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-forest">Gemini enabled</span>
+  {% else %}
+  <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-amber-700">Fallback mode</span>
+  {% endif %}
+</header>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-[1.05fr_1.35fr]">
+  <section class="rounded-[28px] bg-white p-6 shadow-card">
+    <h2 class="font-medium text-forest">Today’s readout</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-3">
+      <div class="rounded-2xl bg-forest-50 p-4">
+        <div class="text-xs uppercase tracking-wide text-mute">Calories</div>
+        <div class="mt-2 text-2xl font-semibold text-forest">{{ totals.kcal|floatformat:0 }}</div>
+      </div>
+      <div class="rounded-2xl bg-forest-50 p-4">
+        <div class="text-xs uppercase tracking-wide text-mute">Protein</div>
+        <div class="mt-2 text-2xl font-semibold text-forest">{{ totals.protein_g|floatformat:0 }} g</div>
+      </div>
+      <div class="rounded-2xl bg-forest-50 p-4">
+        <div class="text-xs uppercase tracking-wide text-mute">Goal</div>
+        <div class="mt-2 text-2xl font-semibold text-forest">{{ target_kcal|default:'—' }} kcal</div>
+      </div>
+    </div>
+
+    <div class="mt-6 space-y-3">
+      {% for note in coach_notes %}
+      <div class="flex gap-3 rounded-2xl border border-sage-100 bg-white p-4">
+        <div class="mt-1 h-2.5 w-2.5 rounded-full bg-forest"></div>
+        <p class="text-sm text-ink">{{ note }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rounded-[28px] bg-white p-4 shadow-card sm:p-5">
+    <div class="flex items-center justify-between gap-3 border-b border-sage-100 pb-4">
+      <div>
+        <h2 class="text-xl font-semibold text-forest">Nutrition coach</h2>
+        <p class="text-sm text-mute">Personalised to your meals, goals and preferences.</p>
+      </div>
+      <button id="clearChatBtn" type="button" class="rounded-xl border border-sage-200 px-3 py-2 text-sm font-medium text-forest hover:bg-forest-50">Clear</button>
+    </div>
+
+    <div id="chatLog" class="mt-4 flex min-h-[360px] flex-col gap-3 overflow-y-auto rounded-[22px] bg-forest-50 p-4">
+      <div class="max-w-[85%] rounded-2xl rounded-bl-md bg-white px-4 py-3 text-sm text-ink shadow-sm">
+        Hi! I can help with your meals, protein, vegetarian ideas, workout planning, and a quick summary of today’s nutrition. Ask me anything.
+      </div>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-2">
+      {% for prompt in suggested_prompts %}
+      <button type="button" class="prompt-chip rounded-full border border-sage-200 bg-white px-3 py-1.5 text-xs font-medium text-forest hover:bg-forest-50" data-prompt="{{ prompt }}">{{ prompt }}</button>
+      {% endfor %}
+    </div>
+
+    <form id="chatForm" class="mt-4 space-y-3">
+      <label class="sr-only" for="messageInput">Ask the AI coach</label>
+      <textarea id="messageInput" rows="3" class="w-full resize-none rounded-2xl border border-sage-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-mute focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/10" placeholder="Ask about meals, protein, vegetarian options, workouts or today’s nutrition..."></textarea>
+      <div class="flex items-center justify-between gap-3">
+        <div id="chatStatus" class="text-xs text-mute">Ready when you are.</div>
+        <button id="sendBtn" type="submit" class="rounded-2xl bg-forest px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 disabled:cursor-not-allowed disabled:opacity-60">Send</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const chatLog = document.getElementById('chatLog');
+  const chatForm = document.getElementById('chatForm');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatStatus = document.getElementById('chatStatus');
+  const clearBtn = document.getElementById('clearChatBtn');
+  let conversationId = null;
+
+  function setStatus(text, tone = 'muted') {
+    chatStatus.textContent = text;
+    chatStatus.className = 'text-xs ' + (tone === 'error' ? 'text-red-600' : tone === 'success' ? 'text-forest' : 'text-mute');
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function addMessage(role, text) {
+    const bubble = document.createElement('div');
+    const isAssistant = role === 'assistant';
+    bubble.className = 'max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm ' + (isAssistant ? 'self-start bg-white text-ink rounded-bl-md' : 'self-end bg-forest text-white rounded-br-md');
+    bubble.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+    chatLog.appendChild(bubble);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+
+  async function sendChat(message) {
+    if (!message.trim()) {
+      setStatus('Please enter a message before sending.', 'error');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    setStatus('Thinking…');
+    addMessage('user', message);
+    messageInput.value = '';
+
+    try {
+      const response = await fetch('/api/v1/ai/chat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ message, conversation_id: conversationId })
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        const raw = data && data.error;
+        const msg = (typeof raw === 'string' && raw.trim()) ? 'The AI coach is temporarily unavailable. Please try again in a moment.' : 'The AI coach could not answer that message.';
+        addMessage('assistant', msg);
+        setStatus(msg, 'error');
+        return;
+      }
+
+      if (data.conversation_id) {
+        conversationId = data.conversation_id;
+      }
+      addMessage('assistant', data.assistant_message || 'I am here to help.');
+      setStatus(data.provider_status === 'unconfigured' ? 'Gemini is not configured; using app-based guidance.' : 'Response ready.', 'success');
+    } catch (error) {
+      addMessage('assistant', 'The AI coach is temporarily unavailable. Please try again in a moment.');
+      setStatus('Temporary server issue.', 'error');
+    } finally {
+      sendBtn.disabled = false;
+      messageInput.focus();
+    }
+  }
+
+  chatForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    sendChat(messageInput.value);
+  });
+
+  document.querySelectorAll('.prompt-chip').forEach(function (button) {
+    button.addEventListener('click', function () {
+      const prompt = button.getAttribute('data-prompt');
+      messageInput.value = prompt;
+      sendChat(prompt);
+    });
+  });
+
+  clearBtn.addEventListener('click', async function () {
+    try {
+      const response = await fetch('/ai-coach/clear/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: conversationId ? `conversation_id=${encodeURIComponent(conversationId)}` : ''
+      });
+      if (response.ok) {
+        conversationId = null;
+        chatLog.innerHTML = '<div class="max-w-[85%] rounded-2xl rounded-bl-md bg-white px-4 py-3 text-sm text-ink shadow-sm">Hi! I can help with your meals, protein, vegetarian ideas, workout planning, and a quick summary of today’s nutrition. Ask me anything.</div>';
+        setStatus('Conversation cleared.', 'success');
+      }
+    } catch (error) {
+      setStatus('Unable to clear the conversation right now.', 'error');
+    }
+  });
+</script>
+{% endblock %}

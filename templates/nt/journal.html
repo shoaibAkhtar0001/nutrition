@@ -1,0 +1,120 @@
+{% extends 'nt/base.html' %}
+{% block title %}Food journal · NutriTrack{% endblock %}
+{% block content %}
+<header class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold text-forest">Food journal</h1>
+  <div class="flex items-center gap-2 text-sm">
+    <a href="?date={{ prev_day|date:'Y-m-d' }}" class="rounded-lg border border-sage-200 px-3 py-1.5 hover:bg-forest-50" aria-label="Previous day">‹</a>
+    <span class="font-medium min-w-[9rem] text-center">{% if is_today %}Today, {% endif %}{{ day|date:"j M Y" }}</span>
+    {% if next_day %}<a href="?date={{ next_day|date:'Y-m-d' }}" class="rounded-lg border border-sage-200 px-3 py-1.5 hover:bg-forest-50" aria-label="Next day">›</a>{% else %}<span class="px-3 py-1.5 text-sage">›</span>{% endif %}
+    <a href="{% url 'nt_food_search' %}" class="rounded-lg border border-sage-200 px-3 py-1.5 hover:bg-forest-50">Browse foods</a>
+  </div>
+</header>
+
+<section class="bg-white rounded-card shadow-card p-5 mt-5 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+  {% with t=summary.totals %}
+  <div><div class="text-xl font-semibold">{{ t.kcal|floatformat:0 }}</div><div class="text-xs text-mute">kcal{% if profile.kcal_target %} / {{ profile.kcal_target }}{% endif %}</div></div>
+  <div><div class="text-xl font-semibold">{{ t.protein_g|floatformat:0 }} g</div><div class="text-xs text-mute">protein</div></div>
+  <div><div class="text-xl font-semibold">{{ t.carbs_g|floatformat:0 }} g</div><div class="text-xs text-mute">carbs</div></div>
+  <div><div class="text-xl font-semibold">{{ t.fat_g|floatformat:0 }} g</div><div class="text-xs text-mute">fat</div></div>
+  <div class="col-span-2 sm:col-span-1"><div class="text-xl font-semibold">{{ t.fibre_g|floatformat:0 }} g</div><div class="text-xs text-mute">fibre</div></div>
+  {% endwith %}
+</section>
+
+{% for s in sections %}
+<section class="bg-white rounded-card shadow-card p-5 mt-5" id="sec-{{ s.key }}">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="font-medium text-forest">{{ s.label }} <span class="text-sm text-mute font-normal">· {{ s.total.kcal|floatformat:0 }} kcal</span></h2>
+    <div class="flex gap-2">
+      <form method="post" action="{% url 'nt_entry_copy' %}">{% csrf_token %}<input type="hidden" name="meal_type" value="{{ s.key }}"><input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+        <button class="text-xs rounded-lg border border-sage-200 px-2.5 py-1.5 hover:bg-forest-50" title="Copy this meal from the previous day">Copy yesterday</button></form>
+      <button type="button" data-add="{{ s.key }}" class="text-xs rounded-lg bg-forest text-white px-3 py-1.5 hover:bg-forest-700">+ Add</button>
+    </div>
+  </div>
+  {% if s.entries %}
+  <ul class="mt-3 divide-y divide-sage-100">
+    {% for e in s.entries %}
+    <li class="py-2.5 flex flex-wrap items-center justify-between gap-2 text-sm">
+      <div><span class="font-medium">{{ e.food_name }}</span> <span class="text-mute">· {{ e.quantity|floatformat:"-2" }} × {{ e.serving_label }}{% if e.is_estimate %} · est.{% endif %}</span></div>
+      <div class="flex items-center gap-3">
+        <span class="text-mute whitespace-nowrap">{{ e.kcal|floatformat:0 }} kcal · P {{ e.protein_g|floatformat:0 }}</span>
+        <button type="button" class="text-forest underline text-xs" data-edit="{{ e.pk }}" data-food="{{ e.food_id }}" data-qty="{{ e.quantity|floatformat:'-2' }}" data-unit="{{ e.serving_unit_id|default:'' }}" data-meal="{{ e.meal_type }}" data-name="{{ e.food_name }}">Edit</button>
+        <form method="post" action="{% url 'nt_entry_delete' e.pk %}" onsubmit="return confirm('Delete {{ e.food_name|escapejs }}?')">{% csrf_token %}<button class="text-red-700 underline text-xs">Delete</button></form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="text-sm text-mute mt-3">Nothing logged for {{ s.label|lower }} yet.</p>{% endif %}
+</section>
+{% endfor %}
+
+{% if recent %}<p class="text-xs text-mute mt-5">Recently eaten: {% for f in recent %}<a class="underline" href="{% url 'nt_food_detail' f.pk %}">{{ f.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+
+<!-- Add / edit dialog -->
+<dialog id="dlg" class="rounded-card p-0 w-[min(32rem,92vw)] backdrop:bg-black/40">
+  <form method="post" id="entry-form" class="p-6 space-y-4">{% csrf_token %}
+    <h2 class="font-semibold text-forest" id="dlg-title">Add food</h2>
+    <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+    <input type="hidden" name="token" id="token">
+    <input type="hidden" name="food_id" id="food_id">
+    <div id="search-wrap">
+      <label for="q" class="text-sm font-medium">Search food</label>
+      <input id="q" autocomplete="off" placeholder="e.g. roti, dal, paneer, poha" class="mt-1 w-full rounded-xl border border-sage-200 px-3 py-2 text-sm">
+      <ul id="results" class="mt-2 max-h-56 overflow-auto divide-y divide-sage-100 text-sm" role="listbox"></ul>
+    </div>
+    <div id="chosen" class="hidden rounded-xl bg-forest-50 p-3 text-sm"></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label for="meal_type" class="text-sm font-medium">Meal</label>
+        <select name="meal_type" id="meal_type" class="mt-1 w-full rounded-xl border border-sage-200 px-3 py-2 text-sm">{% for k, l in meal_types %}<option value="{{ k }}">{{ l }}</option>{% endfor %}</select></div>
+      <div><label for="quantity" class="text-sm font-medium">Quantity</label>
+        <input name="quantity" id="quantity" inputmode="decimal" value="1" required class="mt-1 w-full rounded-xl border border-sage-200 px-3 py-2 text-sm"></div>
+    </div>
+    <div><label for="unit_id" class="text-sm font-medium">Portion</label>
+      <select name="unit_id" id="unit_id" class="mt-1 w-full rounded-xl border border-sage-200 px-3 py-2 text-sm"></select>
+      <p id="preview" class="text-xs text-mute mt-1" aria-live="polite"></p></div>
+    <div class="flex justify-end gap-2 pt-2">
+      <button type="button" id="cancel" class="rounded-xl border border-sage-200 px-4 py-2 text-sm">Cancel</button>
+      <button id="save" class="rounded-xl bg-forest text-white px-4 py-2 text-sm font-medium disabled:opacity-40" disabled>Save</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}<script>
+const dlg = document.getElementById('dlg'), form = document.getElementById('entry-form');
+const $ = id => document.getElementById(id); let current = null, timer = null;
+const ADD_URL = "{% url 'nt_entry_add' %}", API = "{% url 'nt_food_api' %}";
+function newToken(){ return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())).replaceAll('-','').slice(0,32); }
+function choose(food, unitId, qty){
+  current = food; $('food_id').value = food.id; $('search-wrap').classList.add('hidden');
+  $('chosen').classList.remove('hidden'); $('chosen').textContent = food.name + ' · ' + food.category + (food.estimate ? ' · estimated values' : '');
+  const sel = $('unit_id'); sel.innerHTML = '';
+  food.units.forEach(u => { const o = new Option(u.label, u.id); if (String(u.id) === String(unitId) || (!unitId && u.default)) o.selected = true; sel.add(o); });
+  sel.add(new Option('Custom amount (' + food.unit + ')', ''));
+  if (qty) $('quantity').value = qty; update(); }
+function update(){
+  if (!current) return; const unit = current.units.find(u => String(u.id) === $('unit_id').value);
+  const q = parseFloat($('quantity').value); $('save').disabled = !(q > 0);
+  if (!(q > 0)) { $('preview').textContent = ''; return; }
+  const amt = unit ? q * unit.grams : q;
+  $('preview').textContent = '≈ ' + Math.round(amt) + ' ' + current.unit + ' · about ' + Math.round(current.kcal_100 * amt / 100) + ' kcal (estimate)'; }
+function openDlg(meal){ form.action = ADD_URL; $('dlg-title').textContent = 'Add food'; $('meal_type').value = meal; $('token').value = newToken();
+  current = null; $('food_id').value = ''; $('q').value = ''; $('results').innerHTML = ''; $('quantity').value = 1; $('unit_id').innerHTML = '';
+  $('chosen').classList.add('hidden'); $('search-wrap').classList.remove('hidden'); $('save').disabled = true; $('preview').textContent = ''; dlg.showModal(); $('q').focus(); }
+document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => openDlg(b.dataset.add));
+document.querySelectorAll('[data-edit]').forEach(b => b.onclick = async () => {
+  openDlg(b.dataset.meal); $('dlg-title').textContent = 'Edit ' + b.dataset.name; form.action = '/food/entry/' + b.dataset.edit + '/edit/'; $('token').value = '';
+  const r = await fetch(API + '?q=' + encodeURIComponent(b.dataset.name)); const data = await r.json();
+  const f = data.results.find(x => x.id === b.dataset.food); if (f) choose(f, b.dataset.unit, b.dataset.qty); else { $('chosen').classList.remove('hidden'); $('chosen').textContent = 'Could not load this food.'; } });
+$('cancel').onclick = () => dlg.close(); $('quantity').oninput = update; $('unit_id').onchange = update;
+$('q').oninput = () => { clearTimeout(timer); timer = setTimeout(async () => {
+  const q = $('q').value.trim(); const ul = $('results'); ul.innerHTML = ''; if (!q) return;
+  try { const r = await fetch(API + '?q=' + encodeURIComponent(q)); if (!r.ok) throw 0; const data = await r.json();
+    if (!data.results.length) { ul.innerHTML = '<li class="py-2 text-mute">No match. Try another spelling or a local name.</li>'; return; }
+    data.results.forEach(f => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
+      b.className = 'w-full text-left py-2 px-1 hover:bg-forest-50 flex justify-between gap-3 ' + (f.blocked.length ? 'opacity-60' : '');
+      b.innerHTML = '<span></span><span class="text-xs text-mute"></span>'; b.children[0].textContent = f.name; b.children[1].textContent = f.blocked.length ? 'Not suitable: ' + f.blocked[0] : f.category;
+      b.onclick = () => choose(f); li.append(b); ul.append(li); });
+  } catch (e) { ul.innerHTML = '<li class="py-2 text-red-700">Search failed. Please try again.</li>'; } }, 200); };
+form.addEventListener('submit', () => { $('save').disabled = true; });
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+</script>{% endblock %}

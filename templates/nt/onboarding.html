@@ -1,0 +1,992 @@
+{% extends 'nt/base.html' %}
+{% block title %}Set up NutriTrack{% endblock %}
+{% block content %}
+<div class="onboarding-shell">
+  <div class="onboarding-visual">
+    <div class="brand-mark">NutriTrack AI</div>
+    <div class="visual-card card-one">
+      <span class="emoji">🥗</span>
+      <strong>Balanced first meal</strong>
+      <small>Dal, roti & greens</small>
+    </div>
+    <div class="visual-card card-two">
+      <span class="emoji">🍛</span>
+      <strong>Indian staples</strong>
+      <small>Rice, paneer, sabzi</small>
+    </div>
+    <div class="visual-card card-three">
+      <span class="emoji">💧</span>
+      <strong>Hydration</strong>
+      <small>Built into your plan</small>
+    </div>
+  </div>
+
+  <div class="onboarding-panel">
+    <div class="topbar">
+      <div class="brand-inline">NutriTrack AI</div>
+      <div class="progress-meta">
+        <span id="currentStepBadge">Step 1</span>
+        <span class="muted-dot">•</span>
+        <span id="totalStepsBadge">6 steps</span>
+      </div>
+    </div>
+
+    <div class="progress-track" aria-label="Onboarding progress">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <form method="post" id="onboardingForm" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-alert">{{ form.non_field_errors }}</div>{% endif %}
+
+      <section class="journey-step is-active" data-step="welcome">
+        <div class="eyebrow">Nutrition journey</div>
+        <h1>Let's build your nutrition story.</h1>
+        <p class="lead">Personalized nutrition that fits your goals, your lifestyle, and the Indian food you love.</p>
+
+        <div class="welcome-grid">
+          <div class="mini-food-card"><span>🥭</span><small>Fruit-first meals</small></div>
+          <div class="mini-food-card"><span>🍲</span><small>Protein-rich plates</small></div>
+          <div class="mini-food-card"><span>🥘</span><small>Home-cooked classics</small></div>
+        </div>
+
+        <button type="button" class="primary-btn next-step">Get started</button>
+        <p class="fine-print">You can change your preferences anytime.</p>
+      </section>
+
+      <section class="journey-step" data-step="about">
+        <div class="step-head"><span class="step-chip">Step 2</span><h2>About you</h2></div>
+
+        <div class="field-grid">
+          <div class="field-wrap">
+            <label for="display_name">Display name</label>
+            <input type="text" id="display_name" name="display_name" value="{{ form.display_name.value|default:'' }}" placeholder="Your name" />
+            {% for e in form.display_name.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+
+          <div class="field-wrap">
+            <label for="date_of_birth">Date of birth</label>
+            <input type="date" id="date_of_birth" name="date_of_birth" value="{{ form.date_of_birth.value|default:'' }}" />
+            {% for e in form.date_of_birth.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+
+          <div class="field-wrap field-span-2">
+            <label>Sex</label>
+            <div class="segmented row-3">
+              {% for value, label in form.sex.field.choices %}
+                <label class="segment-card {% if form.sex.value == value %}is-selected{% endif %}">
+                  <input type="radio" name="sex" value="{{ value }}" {% if form.sex.value == value %}checked{% endif %}>
+                  <span>{{ label|default:'Prefer not to say' }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% for e in form.sex.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+        </div>
+
+        <div class="field-grid two-col">
+          <div class="field-wrap">
+            <label for="height_cm">Height</label>
+            <div class="measure-box">
+              <input type="number" min="90" max="230" step="1" id="height_cm" name="height_cm" value="{{ form.height_cm.value|default:'170' }}" />
+              <span>cm</span>
+            </div>
+            <input type="range" min="90" max="230" step="1" class="range-control" id="heightSlider" value="{{ form.height_cm.value|default:'170' }}" />
+            {% for e in form.height_cm.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+
+          <div class="field-wrap">
+            <label for="weight_kg">Weight</label>
+            <div class="measure-box">
+              <input type="number" min="25" max="300" step="0.5" id="weight_kg" name="weight_kg" value="{{ form.weight_kg.value|default:'70' }}" />
+              <span>kg</span>
+            </div>
+            <input type="range" min="25" max="300" step="0.5" class="range-control" id="weightSlider" value="{{ form.weight_kg.value|default:'70' }}" />
+            {% for e in form.weight_kg.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="secondary-btn back-step">Back</button>
+          <button type="button" class="primary-btn next-step">Continue</button>
+        </div>
+      </section>
+
+      <section class="journey-step" data-step="goal">
+        <div class="step-head"><span class="step-chip">Step 3</span><h2>Choose your goal</h2></div>
+
+        <div class="choice-grid goal-grid">
+          {% for value, label in form.goal.field.choices %}
+            {% if label %}
+            <label class="choice-card {% if form.goal.value == value %}is-selected{% endif %}">
+              <input type="radio" name="goal" value="{{ value }}" {% if form.goal.value == value %}checked{% endif %}>
+              <div class="choice-illustration">{% if value == 'muscle' %}🏋️{% elif value == 'lose' %}🔥{% elif value == 'maintain' %}⚖️{% else %}🌱{% endif %}</div>
+              <div class="choice-copy">
+                <strong>{{ label }}</strong>
+                <span>
+                  {% if value == 'muscle' %}Build strength and lean mass.{% elif value == 'lose' %}Create a steady calorie deficit.{% elif value == 'maintain' %}Keep energy balanced and stable.{% else %}Improve overall nutrition habits.{% endif %}
+                </span>
+              </div>
+              <span class="checkmark">✓</span>
+            </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="secondary-btn back-step">Back</button>
+          <button type="button" class="primary-btn next-step">Continue</button>
+        </div>
+      </section>
+
+      <section class="journey-step" data-step="routine">
+        <div class="step-head"><span class="step-chip">Step 4</span><h2>Activity and routine</h2></div>
+
+        <div class="stacked-section">
+          <label>Activity level</label>
+          <div class="segmented row-2">
+            {% for value, label in form.activity_level.field.choices %}
+              <label class="segment-card {% if form.activity_level.value == value %}is-selected{% endif %}">
+                <input type="radio" name="activity_level" value="{{ value }}" {% if form.activity_level.value == value %}checked{% endif %}>
+                <span>{{ label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="field-grid two-col">
+          <div class="field-wrap">
+            <label for="meals_per_day">Meals per day</label>
+            <input type="number" id="meals_per_day" name="meals_per_day" min="1" max="6" value="{{ form.meals_per_day.value|default:'4' }}" />
+          </div>
+          <div class="field-wrap">
+            <label for="cooking_minutes">Cooking time</label>
+            <input type="number" id="cooking_minutes" name="cooking_minutes" min="0" max="180" value="{{ form.cooking_minutes.value|default:'' }}" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <label for="daily_budget_inr">Daily food budget</label>
+          <div class="measure-box budget-box">
+            <span>₹</span>
+            <input type="number" id="daily_budget_inr" name="daily_budget_inr" min="0" value="{{ form.daily_budget_inr.value|default:'' }}" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="secondary-btn back-step">Back</button>
+          <button type="button" class="primary-btn next-step">Continue</button>
+        </div>
+      </section>
+
+      <section class="journey-step" data-step="food">
+        <div class="step-head"><span class="step-chip">Step 5</span><h2>Food preferences</h2></div>
+
+        <div class="stacked-section">
+          <label>Diet pattern</label>
+          <div class="choice-grid compact-grid">
+            {% for value, label in form.diet_pattern.field.choices %}
+              <label class="choice-card small-card {% if form.diet_pattern.value == value %}is-selected{% endif %}">
+                <input type="radio" name="diet_pattern" value="{{ value }}" {% if form.diet_pattern.value == value %}checked{% endif %}>
+                <span>{{ label }}</span>
+                <span class="checkmark">✓</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <div class="field-wrap">
+            <label for="allergies_text">Food allergies</label>
+            <input type="text" id="allergies_text" name="allergies_text" value="{{ form.allergies_text.value|default:'' }}" placeholder="e.g. peanut, milk" />
+            {% for e in form.allergies_text.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+
+          <div class="field-wrap">
+            <label for="excluded_text">Ingredients to avoid</label>
+            <input type="text" id="excluded_text" name="excluded_text" value="{{ form.excluded_text.value|default:'' }}" placeholder="e.g. onion, mushroom" />
+            {% for e in form.excluded_text.errors %}<small class="error-text">{{ e }}</small>{% endfor %}
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="secondary-btn back-step">Back</button>
+          <button type="button" class="primary-btn next-step">Continue</button>
+        </div>
+      </section>
+
+      <section class="journey-step" data-step="review">
+        <div class="step-head"><span class="step-chip">Step 6</span><h2>Review &amp; generate targets</h2></div>
+
+        <div class="summary-panel">
+          <div class="summary-row">
+            <span>Goal</span>
+            <strong id="summaryGoal">{{ form.goal.value|default:'General nutrition improvement' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Body</span>
+            <strong>{{ form.height_cm.value|default:'170' }} cm • {{ form.weight_kg.value|default:'70' }} kg</strong>
+          </div>
+          <div class="summary-row">
+            <span>Routine</span>
+            <strong>{{ form.activity_level.value|default:'light' }}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Diet</span>
+            <strong>{{ form.diet_pattern.value|default:'veg' }}</strong>
+          </div>
+        </div>
+
+        <div class="info-banner">
+          We’ll estimate your daily nutrition targets from the information you entered, while keeping your allergy and ingredient rules as hard filters.
+        </div>
+
+        <div class="action-row">
+          <button type="button" class="secondary-btn back-step">Back</button>
+          <button type="submit" class="primary-btn" id="submitBtn">Create my plan</button>
+        </div>
+      </section>
+    </form>
+  </div>
+</div>
+
+<style>
+  :root {
+    --forest: #174B38;
+    --forest-700: #123f30;
+    --forest-soft: #eef4f0;
+    --sage: #8aa596;
+    --sage-soft: #e6efe9;
+    --cream: #F8FAF6;
+    --ink: #1f2a25;
+    --muted: #5f6f68;
+    --card: rgba(255,255,255,0.96);
+    --line: rgba(23,75,56,0.12);
+    --danger: #b42318;
+    --shadow: 0 20px 50px rgba(23,75,56,0.08);
+  }
+
+  body {
+    background: var(--cream);
+  }
+
+  .onboarding-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    min-height: calc(100vh - 48px);
+    display: grid;
+    grid-template-columns: 1.05fr 1.55fr;
+    gap: 24px;
+    padding: 20px 20px 32px;
+  }
+
+  .onboarding-visual {
+    position: relative;
+    background: linear-gradient(145deg, #ecf3ee, #e3eee8);
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    overflow: hidden;
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+    min-height: 780px;
+  }
+
+  .onboarding-visual::before,
+  .onboarding-visual::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    background: rgba(23,75,56,0.05);
+    filter: blur(10px);
+  }
+
+  .onboarding-visual::before {
+    width: 220px;
+    height: 220px;
+    top: -24px;
+    right: -30px;
+  }
+
+  .onboarding-visual::after {
+    width: 260px;
+    height: 260px;
+    bottom: 10%;
+    left: -40px;
+  }
+
+  .brand-mark {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(23,75,56,0.08);
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--forest);
+  }
+
+  .visual-card {
+    position: absolute;
+    z-index: 1;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(23,75,56,0.08);
+    backdrop-filter: blur(8px);
+    border-radius: 22px;
+    padding: 18px 20px;
+    box-shadow: 0 12px 26px rgba(51,82,69,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+    animation: floatCard 7s ease-in-out infinite alternate;
+  }
+
+  .card-one { top: 150px; left: 42px; }
+  .card-two { top: 290px; right: 38px; animation-delay: 0.7s; }
+  .card-three { bottom: 64px; left: 86px; animation-delay: 1.2s; }
+
+  .visual-card .emoji {
+    font-size: 2rem;
+  }
+
+  .visual-card strong {
+    color: var(--ink);
+    font-size: 1rem;
+  }
+
+  .visual-card small {
+    color: var(--muted);
+  }
+
+  .onboarding-panel {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    box-shadow: var(--shadow);
+    padding: 18px 22px 26px;
+    display: flex;
+    flex-direction: column;
+    min-height: 780px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 2px 10px;
+  }
+
+  .brand-inline {
+    font-weight: 700;
+    color: var(--forest);
+    letter-spacing: -0.04em;
+  }
+
+  .progress-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.76rem;
+  }
+
+  .muted-dot { opacity: 0.6; }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(23,75,56,0.08);
+    overflow: hidden;
+    margin: 8px 0 10px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 18%;
+    background: linear-gradient(90deg, var(--forest), #2a7157);
+    border-radius: inherit;
+    transition: width 0.35s ease;
+  }
+
+  .journey-step {
+    display: none;
+    animation: fadeUp 0.4s ease;
+    flex: 1;
+    padding: 18px 4px 0;
+  }
+
+  .journey-step.is-active {
+    display: block;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    background: var(--forest-soft);
+    color: var(--forest);
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 8px 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin-top: 18px;
+    font-size: clamp(2.2rem, 3vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.06em;
+    color: var(--forest);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 2vw, 2rem);
+    color: var(--forest);
+    letter-spacing: -0.05em;
+  }
+
+  .lead {
+    margin-top: 12px;
+    max-width: 560px;
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .welcome-grid {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .mini-food-card {
+    background: linear-gradient(180deg, #ffffff, #f1f7f3);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px 14px 18px;
+    text-align: center;
+    box-shadow: 0 14px 26px rgba(23,75,56,0.04);
+  }
+
+  .mini-food-card span {
+    font-size: 2rem;
+    display: block;
+  }
+
+  .mini-food-card small {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 0.98rem;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  }
+
+  .primary-btn {
+    background: var(--forest);
+    color: white;
+    padding: 15px 22px;
+    box-shadow: 0 16px 26px rgba(23,75,56,0.18);
+  }
+
+  .secondary-btn {
+    background: #edf4f1;
+    color: var(--forest);
+    padding: 14px 20px;
+  }
+
+  .primary-btn:hover,
+  .secondary-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .primary-btn:active,
+  .secondary-btn:active {
+    transform: translateY(0);
+  }
+
+  .next-step,
+  .back-step {
+    margin-top: 28px;
+  }
+
+  .fine-print {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .step-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #edf4f1;
+    color: var(--forest);
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .field-grid.two-col {
+    margin-top: 18px;
+  }
+
+  .field-grid .field-span-2 {
+    grid-column: 1 / -1;
+  }
+
+  .field-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="number"] {
+    width: 100%;
+    border: 1px solid rgba(23,75,56,0.15);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.92);
+    color: var(--ink);
+    padding: 15px 16px;
+    font-size: 1rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  input[type="number"]:focus {
+    outline: none;
+    border-color: rgba(23,75,56,0.45);
+    box-shadow: 0 0 0 4px rgba(23,75,56,0.08);
+  }
+
+  .measure-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.94);
+    border: 1px solid rgba(23,75,56,0.15);
+    border-radius: 16px;
+    padding: 0 12px 0 0;
+  }
+
+  .measure-box input {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding-right: 0;
+  }
+
+  .measure-box span {
+    color: var(--muted);
+    font-weight: 700;
+    padding-right: 12px;
+  }
+
+  .range-control {
+    width: 100%;
+    accent-color: var(--forest);
+    margin-top: 6px;
+  }
+
+  .segmented {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .segment-card,
+  .choice-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(23,75,56,0.15);
+    background: rgba(255,255,255,0.9);
+    border-radius: 18px;
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .segment-card input,
+  .choice-card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .segment-card.is-selected,
+  .choice-card.is-selected {
+    border-color: rgba(23,75,56,0.35);
+    background: rgba(23,75,56,0.04);
+    box-shadow: 0 14px 20px rgba(23,75,56,0.06);
+  }
+
+  .segment-card.is-selected::after,
+  .choice-card.is-selected::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid rgba(23,75,56,0.25);
+    pointer-events: none;
+  }
+
+  .row-3 .segment-card { flex: 1 1 32%; }
+  .row-2 .segment-card { flex: 1 1 48%; }
+
+  .stacked-section {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .choice-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .goal-grid .choice-card {
+    align-items: flex-start;
+    min-height: 130px;
+    padding: 16px;
+    overflow: hidden;
+  }
+
+  .choice-illustration {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: rgba(23,75,56,0.06);
+    font-size: 1.8rem;
+  }
+
+  .choice-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .choice-copy strong {
+    color: var(--ink);
+    font-size: 1rem;
+  }
+
+  .choice-copy span {
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .checkmark {
+    align-self: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(23,75,56,0.08);
+    color: var(--forest);
+    font-weight: 800;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: all 0.2s ease;
+  }
+
+  .choice-card.is-selected .checkmark {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .small-card {
+    min-height: 72px;
+    justify-content: space-between;
+    padding: 16px 18px;
+  }
+
+  .summary-panel {
+    border: 1px solid rgba(23,75,56,0.12);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.76);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  .summary-row strong {
+    color: var(--ink);
+    text-align: right;
+    font-weight: 700;
+  }
+
+  .info-banner {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(23,75,56,0.06);
+    border: 1px solid rgba(23,75,56,0.08);
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .error-text {
+    color: var(--danger);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .form-alert {
+    margin-bottom: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(180,35,24,0.18);
+    background: rgba(180,35,24,0.06);
+    color: var(--danger);
+    padding: 12px 14px;
+    font-size: 0.88rem;
+  }
+
+  .action-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .action-row .primary-btn,
+  .action-row .secondary-btn {
+    flex: 1;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes floatCard {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-10px); }
+  }
+
+  @media (max-width: 980px) {
+    .onboarding-shell {
+      grid-template-columns: 1fr;
+      max-width: 760px;
+      padding: 18px 12px 26px;
+    }
+
+    .onboarding-visual {
+      min-height: 260px;
+    }
+
+    .visual-card {
+      position: static;
+      display: inline-flex;
+      margin: 20px 8px 0 0;
+      min-width: 0;
+    }
+
+    .onboarding-panel {
+      min-height: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .onboarding-panel {
+      padding: 16px 14px 20px;
+    }
+
+    .field-grid,
+    .choice-grid,
+    .welcome-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .action-row {
+      flex-direction: column-reverse;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const steps = Array.from(document.querySelectorAll('.journey-step'));
+    const progressFill = document.getElementById('progressFill');
+    const currentStepBadge = document.getElementById('currentStepBadge');
+    const totalStepsBadge = document.getElementById('totalStepsBadge');
+    const form = document.getElementById('onboardingForm');
+    let currentStep = 0;
+
+    const stepNames = ['Welcome', 'About you', 'Goal', 'Routine', 'Preferences', 'Review'];
+    const stepCount = steps.length;
+    totalStepsBadge.textContent = stepCount + ' steps';
+
+    function setProgress(index) {
+      const pct = ((index + 1) / stepCount) * 100;
+      progressFill.style.width = pct + '%';
+      currentStepBadge.textContent = 'Step ' + (index + 1);
+    }
+
+    function showStep(index) {
+      const validIndex = Math.max(0, Math.min(index, stepCount - 1));
+      steps.forEach((step, i) => {
+        step.classList.toggle('is-active', i === validIndex);
+      });
+      currentStep = validIndex;
+      setProgress(validIndex);
+    }
+
+    function syncNumericInputs() {
+      const heightInput = document.getElementById('height_cm');
+      const weightInput = document.getElementById('weight_kg');
+      const heightSlider = document.getElementById('heightSlider');
+      const weightSlider = document.getElementById('weightSlider');
+
+      if (heightInput && heightSlider) {
+        heightSlider.value = heightInput.value || 170;
+        heightInput.addEventListener('input', function () {
+          heightSlider.value = this.value || 170;
+        });
+        heightSlider.addEventListener('input', function () {
+          heightInput.value = this.value;
+        });
+      }
+
+      if (weightInput && weightSlider) {
+        weightSlider.value = weightInput.value || 70;
+        weightInput.addEventListener('input', function () {
+          weightSlider.value = this.value || 70;
+        });
+        weightSlider.addEventListener('input', function () {
+          weightInput.value = this.value;
+        });
+      }
+    }
+
+    function bindChoiceCards() {
+      const syncGroupState = (groupName) => {
+        const radios = document.querySelectorAll(`input[type="radio"][name="${CSS.escape(groupName)}"]`);
+        radios.forEach((radio) => {
+          const card = radio.closest('.choice-card, .segment-card');
+          if (card) {
+            card.classList.toggle('is-selected', radio.checked);
+          }
+        });
+      };
+
+      document.querySelectorAll('input[type="radio"]').forEach((radio) => {
+        const groupName = radio.name;
+        if (!groupName) return;
+
+        radio.addEventListener('change', () => {
+          syncGroupState(groupName);
+        });
+
+        syncGroupState(groupName);
+      });
+    }
+
+    document.querySelectorAll('.next-step').forEach((button) => {
+      button.addEventListener('click', function () {
+        if (currentStep === 0) {
+          showStep(1);
+          return;
+        }
+        showStep(Math.min(currentStep + 1, steps.length - 1));
+      });
+    });
+
+    document.querySelectorAll('.back-step').forEach((button) => {
+      button.addEventListener('click', function () {
+        showStep(Math.max(currentStep - 1, 0));
+      });
+    });
+
+    const goalValue = document.querySelector('input[name="goal"]:checked');
+    if (goalValue) {
+      document.getElementById('summaryGoal').textContent = goalValue.value;
+    }
+
+    form.addEventListener('submit', function () {
+      const submitBtn = document.getElementById('submitBtn');
+      if (!submitBtn) return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating your plan...';
+      submitBtn.style.opacity = '0.8';
+    });
+
+    syncNumericInputs();
+    bindChoiceCards();
+    showStep(0);
+  })();
+</script>
+{% endblock %}

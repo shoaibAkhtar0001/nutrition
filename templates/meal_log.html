@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Log</title>
+</head>
+<body>
+    <h2>Log Your Meal</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Log Meal</button>
+    </form>
+
+    <h3>Meal History</h3>
+    <ul>
+        {% for meal in meals %}
+            <li>{{ meal.food_name }} - {{ meal.calories }} kcal</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends 'nt/base.html' %}
+{% block title %}{{ exercise.name }} progress{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-5xl space-y-6">
+  <div class="rounded-2xl border border-sage-100 bg-white p-3 shadow-card">
+    <nav class="flex flex-wrap gap-2" aria-label="Exercise module navigation">
+      {% for item in exercise_nav %}
+        <a href="{{ item.url }}" class="rounded-full px-3 py-2 text-sm font-medium {% if item.key == 'progress' %}bg-forest text-white{% else %}text-forest hover:bg-forest-50{% endif %}">{{ item.label }}</a>
+      {% endfor %}
+    </nav>
+  </div>
+
+  <div class="rounded-[32px] border border-sage-100 bg-white p-6 shadow-card">
+    <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-forest/80">Progress</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-forest">{{ exercise.name }}</h1>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'nt_exercise_detail' exercise.slug %}" class="rounded-xl border border-sage-200 px-4 py-2 text-sm font-medium text-forest hover:bg-forest-50">Back to detail</a>
+        <a href="{% url 'nt_exercises' %}" class="rounded-xl bg-forest px-4 py-2 text-sm font-medium text-white hover:bg-forest-700">Library</a>
+      </div>
+    </div>
+
+    {% if points %}
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      <div class="rounded-2xl bg-forest-50 p-4">
+        <p class="text-xs uppercase tracking-[0.12em] text-mute">Best weight</p>
+        <p class="mt-2 text-2xl font-bold text-forest">{{ best_weight|floatformat:1 }} kg</p>
+      </div>
+      <div class="rounded-2xl bg-forest-50 p-4">
+        <p class="text-xs uppercase tracking-[0.12em] text-mute">Total volume</p>
+        <p class="mt-2 text-2xl font-bold text-forest">{{ total_volume|floatformat:0 }}</p>
+      </div>
+      <div class="rounded-2xl bg-forest-50 p-4">
+        <p class="text-xs uppercase tracking-[0.12em] text-mute">Sessions</p>
+        <p class="mt-2 text-2xl font-bold text-forest">{{ points|length }}</p>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-sage-100 bg-forest-50 p-4">
+      <h2 class="text-lg font-semibold text-forest">Performance history</h2>
+      <div class="mt-4 space-y-3">
+        {% for point in points %}
+        <div class="flex items-center justify-between rounded-xl border border-sage-200 bg-white px-3 py-2">
+          <div>
+            <p class="font-medium text-ink">{{ point.date }}</p>
+            <p class="text-sm text-mute">{{ point.session_name }}</p>
+          </div>
+          <div class="text-right text-sm text-mute">
+            <p>{{ point.weight|floatformat:1 }} kg</p>
+            <p>{{ point.reps }} reps</p>
+          </div>
+          <a href="{% url 'nt_workout_summary' point.session_id %}" class="text-sm font-medium text-forest">Open session</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="mt-6 rounded-[28px] border border-dashed border-sage-200 bg-white p-12 text-center">
+      <p class="text-xl font-semibold text-forest">No history yet</p>
+      <p class="mt-2 text-mute">Complete a workout to start tracking your progress for this movement.</p>
+      <a href="{% url 'nt_exercises' %}" class="mt-5 inline-flex rounded-xl bg-forest px-4 py-2 text-sm font-medium text-white">Discover exercises</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

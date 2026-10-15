@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriTrack - Smart Nutrition Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+        .animate-delay-1 { animation-delay: 0.1s; }
+        .animate-delay-2 { animation-delay: 0.2s; }
+        .animate-delay-3 { animation-delay: 0.3s; }
+        .animate-delay-4 { animation-delay: 0.4s; }
+        .animate-delay-5 { animation-delay: 0.5s; }
+        .animate-delay-6 { animation-delay: 0.6s; }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full bg-[#1E40AF] shadow-lg z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Main Navigation -->
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex-shrink-0 flex items-center space-x-4">
+                        <div class="bg-white/10 rounded-lg p-2">
+                            <span class="text-2xl">🥗</span>
+                        </div>
+                        <span class="text-2xl font-bold text-white">NutriTrack</span>
+                    </div>
+                    
+                    <!-- Desktop Navigation Links -->
+                   
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <!-- Quick Stats -->
+                    
+
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden sm:block">
+                            <div class="text-sm text-white/90">Welcome back,</div>
+                            <div class="text-white font-medium">{{username}}</div>
+                        </div>
+                        <button onclick="logout()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-[#1E40AF] bg-white hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 transition-all duration-300 ease-in-out">
+                            Logout
+                        </button>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <button class="md:hidden text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden py-4 border-t border-white/10">
+                <div class="flex flex-col space-y-3">
+                    <a href="#" class="text-white/90 hover:text-white px-4 py-2 text-sm">Dashboard</a>
+                    <a href="#" class="text-white/90 hover:text-white px-4 py-2 text-sm">Meals</a>
+                    <a href="#" class="text-white/90 hover:text-white px-4 py-2 text-sm">Workouts</a>
+                    <a href="#" class="text-white/90 hover:text-white px-4 py-2 text-sm">Progress</a>
+                    
+                    <!-- Mobile Quick Stats -->
+                    <div class="px-4 py-3 bg-white/5 rounded-lg mt-2 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/90 text-sm">Daily Calories</span>
+                            <span class="text-white font-medium">1,840 / 2,000</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/90 text-sm">Water Intake</span>
+                            <span class="text-white font-medium">1.5L / 2.5L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <!-- Dashboard Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Your Nutrition Dashboard</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Track your nutrition, plan your meals, and achieve your health goals</p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Calorie Calculator -->
+            <a href="{% url 'calorie_calculator' %}" class="group">
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Calorie Calculator" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">Calorie Calculator</h2>
+                        <p class="text-gray-600">Calculate your daily calorie needs based on your age, weight, height, and activity level.</p>
+                        <div class="mt-4 text-[#1E40AF] font-semibold group-hover:text-blue-700">Calculate Now →</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Indian Diet Plan -->
+            <a href="{% url 'diet_form' %}" class="group">
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Indian Diet Plan" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">Indian Diet Plan</h2>
+                        <p class="text-gray-600">Get personalized Indian diet plans with traditional recipes and modern nutrition guidelines.</p>
+                        <div class="mt-4 text-[#1E40AF] font-semibold group-hover:text-blue-700">Create Plan →</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Food Database -->
+            <a href="{% url 'food_search' %}" class="group">
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Food Database" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">Food Database</h2>
+                        <p class="text-gray-600">Access our comprehensive database of Indian foods with detailed nutritional information.</p>
+                        <div class="mt-4 text-[#1E40AF] font-semibold group-hover:text-blue-700">Search Foods →</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Workout Planner -->
+            <a href="{% url 'workout_form' %}" class="group">
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Workout Planner" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">Workout Planner</h2>
+                        <p class="text-gray-600">Get customized workout recommendations that complement your nutrition goals.</p>
+                        <div class="mt-4 text-[#1E40AF] font-semibold group-hover:text-blue-700">Plan Workout →</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Workout Progress Tracker -->
+            <a href="{% url 'log_workout' %}" class="group">
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Progress Tracking" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">Workout Progress Tracker</h2>
+                        <p class="text-gray-600">Log workouts, track progress, and stay motivated with insights and stats.</p>
+                        <div class="mt-4 text-[#1E40AF] font-semibold group-hover:text-blue-700">Track Progress →</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Exercise Finder -->
+            <a href="{% url 'workout' %}" class="group">
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Exercise Finder" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">Exercise Finder</h2>
+                        <p class="text-gray-600">Get AI-powered workout recommendations based on your goals and equipment.</p>
+                        <div class="mt-4 text-[#1E40AF] font-semibold group-hover:text-blue-700">Find Exercises →</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <script>
+        function logout() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+        
+            setTimeout(() => {
+                window.location.href = "/logout/";
+            }, 500);
+        }
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            const logoutButton = document.querySelector("button");
+            if (logoutButton) {
+                logoutButton.addEventListener("click", logout);
+            }
+        });
+    </script>
+</body>
+</html>

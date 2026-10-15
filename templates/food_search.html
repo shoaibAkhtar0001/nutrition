@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            text-align: center;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .logo-icon {
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 7rem auto 2rem;
+            padding: 0 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px;
+            width: 320px;
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+        }
+        input:focus {
+            border-color: var(--primary-dark);
+        }
+
+        button {
+            padding: 12px 15px;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .food-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .food-card {
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 10px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .food-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{% url 'dashboard' username=request.user.username %}" class="logo">
+                <div class="logo-icon">🥗</div>
+                NutriTrack
+            </a>
+            <div class="nav-links">
+                <a href="{% url 'dashboard' username=request.user.username %}">Dashboard</a>
+                <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Search for Food Nutrition</h1>
+        <form method="GET">
+            <input type="text" name="query" placeholder="Enter food name..." required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    {% if food_data %}
+        <div class="food-container">
+            {% for food in food_data.foods %}
+                <div class="food-card">
+                    <h3>{{ food.food_name }}</h3>
+                    <img src="{{ food.photo.thumb }}" alt="{{ food.food_name }}">
+                    <p><strong>Calories:</strong> {{ food.nf_calories }} kcal</p>
+                    <p><strong>Protein:</strong> {{ food.nf_protein }} g</p>
+                    <p><strong>Carbs:</strong> {{ food.nf_total_carbohydrate }} g</p>
+                    <p><strong>Fat:</strong> {{ food.nf_total_fat }} g</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body>
+</html>

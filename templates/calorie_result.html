@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Calculation Result</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 1rem;
+        }
+
+        .result-container {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .result-box {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 8px;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="result-container">
+        <h1>Calorie Results</h1>
+        <div class="result-box">
+            <p><strong>Maintenance Calories:</strong> {{ maintenance_calories }} kcal/day</p>
+            <p><strong>Weight Loss Calories:</strong> {{ weight_loss_calories }} kcal/day</p>
+            <p><strong>Weight Gain Calories:</strong> {{ weight_gain_calories }} kcal/day</p>
+        </div>
+        <a href="{% url 'calorie_calculator' %}" class="back-btn">Back to Calculator</a>
+        <a href="{% url 'diet_form' %}" class="back-btn">Diet Plan</a>
+        <a href="{% url 'workout_form' %}" class="back-btn">Workout plan</a>
+    </div>
+</body>
+</html>

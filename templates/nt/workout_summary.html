@@ -1,0 +1,51 @@
+{% extends 'nt/base.html' %}
+{% block title %}Workout summary{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-5xl space-y-6">
+  <div class="rounded-2xl border border-sage-100 bg-white p-3 shadow-card">
+    <nav class="flex flex-wrap gap-2" aria-label="Exercise module navigation">
+      {% for item in exercise_nav %}
+        <a href="{{ item.url }}" class="rounded-full px-3 py-2 text-sm font-medium {% if item.key == 'workouts' %}bg-forest text-white{% else %}text-forest hover:bg-forest-50{% endif %}">{{ item.label }}</a>
+      {% endfor %}
+    </nav>
+  </div>
+
+  <div class="rounded-[32px] border border-sage-100 bg-white p-6 shadow-card">
+    <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-forest/80">Workout summary</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-forest">{{ session.name }}</h1>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'workout_history' %}" class="rounded-xl border border-sage-200 px-4 py-2 text-sm font-medium text-forest hover:bg-forest-50">View history</a>
+        <a href="{% url 'nt_exercises' %}" class="rounded-xl bg-forest px-4 py-2 text-sm font-medium text-white hover:bg-forest-700">Discover more</a>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-4">
+      <div class="rounded-2xl bg-forest-50 p-4"><p class="text-xs uppercase tracking-[0.12em] text-mute">Duration</p><p class="mt-2 text-2xl font-bold text-forest">{{ session.elapsed_seconds|default:0 }}s</p></div>
+      <div class="rounded-2xl bg-forest-50 p-4"><p class="text-xs uppercase tracking-[0.12em] text-mute">Exercises</p><p class="mt-2 text-2xl font-bold text-forest">{{ exercises|length }}</p></div>
+      <div class="rounded-2xl bg-forest-50 p-4"><p class="text-xs uppercase tracking-[0.12em] text-mute">Completed sets</p><p class="mt-2 text-2xl font-bold text-forest">{{ total_sets }}</p></div>
+      <div class="rounded-2xl bg-forest-50 p-4"><p class="text-xs uppercase tracking-[0.12em] text-mute">Reps</p><p class="mt-2 text-2xl font-bold text-forest">{{ total_reps }}</p></div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-sage-100 bg-forest-50 p-4">
+      <h2 class="text-lg font-semibold text-forest">Exercise breakdown</h2>
+      <div class="mt-4 space-y-3">
+        {% for item in exercises %}
+        <div class="flex items-center justify-between rounded-xl border border-sage-200 bg-white px-3 py-2 text-sm text-mute">
+          <div>
+            <p class="font-medium text-ink">{{ item.exercise.name }}</p>
+            <p>{{ item.status }}</p>
+          </div>
+          <div class="text-right">
+            <p>{{ item.completed_sets }} sets</p>
+            <p>{{ item.reps }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

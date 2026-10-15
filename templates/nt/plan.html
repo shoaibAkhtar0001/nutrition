@@ -1,0 +1,42 @@
+{% extends 'nt/base.html' %}
+{% block title %}Plan · NutriTrack{% endblock %}
+{% block content %}
+<header class="flex items-end justify-between gap-3">
+  <div>
+    <p class="text-sm text-mute">{{ today|date:"l, j F Y" }}</p>
+    <h1 class="text-2xl font-semibold text-forest">Meal plan</h1>
+  </div>
+  <a href="{% url 'nt_journal' %}" class="rounded-xl bg-forest text-white px-4 py-2.5 text-sm font-medium hover:bg-forest-700">+ Add food</a>
+</header>
+
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+  {% for card in plan %}
+  <section class="bg-white rounded-card shadow-card p-6">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold text-forest">{{ card.title }}</h2>
+      <span class="text-xs uppercase tracking-wide bg-sage-100 text-mute rounded-full px-2 py-1">{{ card.subhead }}</span>
+    </div>
+    <div class="mt-4 rounded-2xl border border-sage-100 bg-forest-50 p-4">
+      <div class="text-sm text-mute">Suggested anchor</div>
+      <div class="mt-1 text-lg font-semibold text-ink">{{ card.item.food }}</div>
+      <div class="mt-2 flex items-center gap-3 text-sm text-mute">
+        <span>{{ card.item.kcal }} kcal</span>
+        <span>•</span>
+        <span>{{ card.item.protein }} g protein</span>
+      </div>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+
+<section class="bg-white rounded-card shadow-card p-6 mt-6">
+  <div class="flex justify-between items-center">
+    <h2 class="font-medium text-forest">Today's pacing</h2>
+    <div class="text-sm text-mute">{{ total_kcal|floatformat:0 }} / {{ target_kcal|default:'–' }} kcal</div>
+  </div>
+  <div class="h-3 mt-4 rounded-full bg-sage-100 overflow-hidden">
+    <div class="h-full bg-forest rounded-full" style="width: {{ progress_pct|floatformat:0 }}%;"></div>
+  </div>
+  <p class="mt-3 text-sm text-mute">Keep the day steady: protein at each main meal, a fruit or veg add-on, and water between meals.</p>
+</section>
+{% endblock %}

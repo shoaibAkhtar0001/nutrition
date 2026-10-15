@@ -1,0 +1,122 @@
+{% extends 'nt/base.html' %}
+{% load nt_extras %}
+{% block title %}Dashboard · NutriTrack{% endblock %}
+{% block content %}
+<header class="flex flex-wrap items-end justify-between gap-3">
+  <div>
+    <p class="text-sm text-mute">{{ today|date:"l, j F Y" }}</p>
+    <h1 class="text-2xl font-semibold text-forest">Hello, {{ profile.display_name|default:request.user.username }}</h1>
+  </div>
+  <a href="{% url 'nt_journal' %}" class="rounded-xl bg-forest text-white px-4 py-2.5 text-sm font-medium hover:bg-forest-700">+ Add food</a>
+</header>
+
+<div class="mt-4 rounded-2xl border border-forest/10 bg-forest-50 px-4 py-3 text-sm text-forest shadow-sm">
+  <p class="font-medium tracking-wide uppercase text-[10px] text-mute">Daily motivation</p>
+  <p class="mt-1 italic">“Small steps every day are still progress.”</p>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+  <section class="bg-white rounded-card shadow-card p-6 lg:col-span-2">
+    <div class="flex items-center gap-6 flex-wrap">
+      <div class="relative w-36 h-36 shrink-0" role="img" aria-label="{{ totals.kcal|floatformat:0 }} of {{ profile.kcal_target }} calories eaten">
+        <svg viewBox="0 0 120 120" class="-rotate-90 w-full h-full">
+          <circle cx="60" cy="60" r="52" fill="none" stroke-width="10" class="ring-track"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" class="ring-fill"
+                  stroke-dasharray="326.7" stroke-dashoffset="{{ ring_offset }}" id="ring" data-pct="{{ kcal_pct }}"/>
+        </svg>
+        <div class="absolute inset-0 grid place-items-center text-center"><div><div class="text-2xl font-semibold">{{ totals.kcal|floatformat:0 }}</div><div class="text-xs text-mute">of {{ profile.kcal_target }} kcal</div></div></div>
+      </div>
+      <div class="flex-1 min-w-[220px]">
+        <p class="text-sm text-mute">Calories remaining</p>
+        <p class="text-3xl font-semibold {% if kcal_left < 0 %}text-amber-700{% else %}text-forest{% endif %}">{% if kcal_left < 0 %}{{ kcal_left|floatformat:0|cut:"-" }} over{% else %}{{ kcal_left|floatformat:0 }}{% endif %}</p>
+        <p class="text-xs text-mute mt-1">Targets are estimates. <a class="underline" href="{% url 'nt_targets' %}">Review</a></p>
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-x-8 gap-y-4 mt-6">
+      {% for m in macros %}
+      <div>
+        <div class="flex justify-between text-sm"><span class="font-medium">{{ m.name }}</span><span class="text-mute">{{ m.used|floatformat:0 }} / {{ m.target|default:"–" }} {{ m.unit }}</span></div>
+        <div class="h-2 rounded-full bg-sage-100 mt-1.5" role="progressbar" aria-valuenow="{{ m.pct }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ m.name }}"><div class="h-2 rounded-full bg-forest bar-fill" style="width: {{ m.pct }}%"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="bg-white rounded-card shadow-card p-6">
+    <h2 class="font-medium text-forest">Water</h2>
+    <p class="text-sm text-mute mt-1">{{ water }} / {{ profile.water_target_ml }} ml</p>
+    <div class="h-2 rounded-full bg-sage-100 mt-2"><div class="h-2 rounded-full bg-sage bar-fill" style="width: {{ water_pct }}%"></div></div>
+    <form method="post" action="{% url 'nt_water_add' %}" class="mt-4 flex flex-wrap gap-2">{% csrf_token %}
+      {% for ml in water_options %}<button name="ml" value="{{ ml }}" class="rounded-full border border-sage-200 px-3 py-1.5 text-sm hover:bg-forest-50">+{{ ml }} ml</button>{% endfor %}
+    </form>
+    <h2 class="font-medium text-forest mt-6">Weight</h2>
+    {% if latest_weight %}<p class="text-sm mt-1"><span class="text-2xl font-semibold">{{ latest_weight.weight_kg }}</span> kg <span class="text-mute">on {{ latest_weight.date|date:"j M" }}</span></p>
+      {% if first_weight and first_weight.pk != latest_weight.pk %}<p class="text-xs text-mute">Started at {{ first_weight.weight_kg }} kg. Weight naturally varies day to day.</p>{% endif %}{% endif %}
+    <form method="post" action="{% url 'nt_weight_add' %}" class="mt-3 flex gap-2">{% csrf_token %}
+      <label class="sr-only" for="kg">Today's weight in kg</label>
+      <input id="kg" name="kg" inputmode="decimal" placeholder="kg" class="w-24 rounded-xl border border-sage-200 px-3 py-2 text-sm" required>
+      <button class="rounded-xl border border-forest text-forest px-3 py-2 text-sm hover:bg-forest-50">Save</button>
+    </form>
+  </section>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+  <section class="bg-white rounded-card shadow-card p-6 lg:col-span-2">
+    <h2 class="font-medium text-forest">Today's meals</h2>
+    <div class="grid sm:grid-cols-2 gap-3 mt-4">
+      {% for key, label in meal_labels %}
+        <a href="{% url 'nt_journal' %}" class="rounded-xl border border-sage-100 p-4 hover:bg-forest-50">
+          <div class="flex justify-between text-sm"><span class="font-medium">{{ label }}</span><span class="text-mute">{{ summary.meal_totals|meal_kcal:key }}</span></div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="bg-white rounded-card shadow-card p-6">
+    <h2 class="font-medium text-forest">This week</h2>
+    <div class="flex gap-1.5 mt-3" aria-label="Days logged in the last 7 days">
+      {% for d in week %}<div class="flex-1 text-center"><div class="h-8 rounded-lg {% if d.logged %}bg-forest{% else %}bg-sage-100{% endif %}"></div><div class="text-[10px] text-mute mt-1">{{ d.date|date:"D"|slice:":1" }}</div></div>{% endfor %}
+    </div>
+    <p class="text-sm text-mute mt-3">Logged on {{ week_logged }} of the last 7 days. Gaps are normal; just pick up again.</p>
+  </section>
+</div>
+
+<section class="mt-6 rounded-card bg-white p-6 shadow-card">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="font-medium text-forest">Suggested workout plan</h2>
+    <span class="rounded-full bg-forest-50 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-forest">{{ profile.activity_level|title }}</span>
+  </div>
+  <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+    {% for session in workout_plan %}
+      <div class="rounded-2xl border border-sage-100 bg-forest-50 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-sm font-semibold text-forest">{{ session.day }}</span>
+          <span class="text-[10px] uppercase tracking-wide text-mute">{{ session.duration }} min</span>
+        </div>
+        <p class="mt-2 text-sm font-medium text-ink">{{ session.focus }}</p>
+        <p class="mt-2 text-xs text-mute">{{ session.exercises|join:", " }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+  <section class="bg-white rounded-card shadow-card p-6 lg:col-span-2">
+    <h2 class="font-medium text-forest">What could fit next</h2>
+    {% if suggestions %}
+      <ul class="mt-3 divide-y divide-sage-100">
+      {% for s in suggestions %}<li class="py-2.5 flex justify-between gap-4 text-sm"><span>{{ s.food.name }} <span class="text-mute">· {{ s.unit.label }}</span></span><span class="text-mute whitespace-nowrap">{{ s.nutrients.kcal|floatformat:0 }} kcal · {{ s.nutrients.protein_g|floatformat:0 }} g protein</span></li>{% endfor %}
+      </ul>
+      <p class="text-xs text-mute mt-2">Chosen from your remaining targets and your dietary rules. Estimates, not prescriptions.</p>
+    {% else %}<p class="text-sm text-mute mt-2">No suggestions right now: either your calorie target is nearly met or no food fits your constraints.</p>{% endif %}
+  </section>
+  <section class="bg-forest text-white rounded-card shadow-card p-6">
+    <h2 class="font-medium">Today's insight</h2>
+    <p class="text-sm mt-2 text-white/90">{{ insight }}</p>
+    <p class="text-[11px] mt-3 text-white/60">Calculated from your logged data. No AI model was used.</p>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+  const r = document.getElementById('ring'); if (r) { const full = 326.7, pct = +r.dataset.pct;
+    r.style.strokeDashoffset = full; requestAnimationFrame(() => r.style.strokeDashoffset = full * (1 - pct/100)); }
+</script>{% endblock %}

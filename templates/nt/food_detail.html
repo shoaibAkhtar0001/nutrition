@@ -1,0 +1,35 @@
+{% extends 'nt/base.html' %}
+{% block title %}{{ food.name }} · NutriTrack{% endblock %}
+{% block content %}
+<a href="{% url 'nt_food_search' %}" class="text-sm text-mute hover:text-forest">← Food database</a>
+<h1 class="text-2xl font-semibold text-forest mt-2">{{ food.name }}</h1>
+<p class="text-sm text-mute">{{ food.get_category_display }} · {{ food.get_diet_type_display }}{% if food.preparation %} · {{ food.preparation }}{% endif %}</p>
+{% if food.aliases.all %}<p class="text-sm text-mute mt-1">Also known as: {% for a in food.aliases.all %}{{ a.alias }}{% if a.language %} ({{ a.language }}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+{% if violations %}<div class="mt-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm p-4">This food is flagged for you: {{ violations|join:"; " }}.</div>{% endif %}
+<div class="grid md:grid-cols-2 gap-6 mt-6">
+  <section class="bg-white rounded-card shadow-card p-5">
+    <h2 class="font-medium text-forest">Nutrition per 100 {{ food.base_unit }}</h2>
+    <dl class="mt-3 text-sm divide-y divide-sage-100">
+      <div class="flex justify-between py-2"><dt>Energy</dt><dd>{{ food.kcal|floatformat:0 }} kcal</dd></div>
+      <div class="flex justify-between py-2"><dt>Protein</dt><dd>{{ food.protein_g|floatformat:1 }} g</dd></div>
+      <div class="flex justify-between py-2"><dt>Carbohydrates</dt><dd>{{ food.carbs_g|floatformat:1 }} g</dd></div>
+      <div class="flex justify-between py-2"><dt>Fat</dt><dd>{{ food.fat_g|floatformat:1 }} g</dd></div>
+      <div class="flex justify-between py-2"><dt>Fibre</dt><dd>{{ food.fibre_g|floatformat:1 }} g</dd></div>
+    </dl>
+    <div class="mt-4 text-xs text-mute space-y-1">
+      <p><strong>Data status:</strong> {{ food.get_confidence_display }}</p>
+      <p><strong>Source:</strong> {{ food.source }}</p>
+      {% if food.source_note %}<p>{{ food.source_note }}</p>{% endif %}
+      {% if food.allergens %}<p><strong>Contains:</strong> {{ food.allergens|join:", " }}. Allergen tags may be incomplete for mixed dishes; always check ingredients.</p>{% endif %}
+    </div>
+  </section>
+  <section class="bg-white rounded-card shadow-card p-5">
+    <h2 class="font-medium text-forest">Household portions</h2>
+    <ul class="mt-3 text-sm space-y-2">
+      {% for u in food.serving_units.all %}<li class="flex justify-between"><span>{{ u.label }}{% if u.note %}<span class="block text-xs text-mute">{{ u.note }}</span>{% endif %}</span><span class="text-mute">{{ u.grams|floatformat:"-1" }} {{ food.base_unit }}</span></li>{% endfor %}
+    </ul>
+    <p class="text-xs text-mute mt-3">Portion sizes are specific to this food and are approximate; your own katori or roti may differ.</p>
+    <p class="mt-4 text-sm"><a class="underline text-forest" href="{% url 'nt_journal' %}">Log it from the food journal</a></p>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}NutriTrack{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { forest: {DEFAULT:'#174B38', 700:'#1d5c45', 50:'#eef4f0'}, sage: {DEFAULT:'#8aa596', 100:'#e4ece7', 200:'#cddcd3'},
+                lime: {soft:'#d6f26b'}, paper:'#F8FAF6', ink:'#1f2a25', mute:'#66726b' },
+      borderRadius: { card: '1.25rem' }, boxShadow: { card: '0 1px 2px rgba(23,75,56,.06), 0 4px 14px rgba(23,75,56,.05)' } } } }
+  </script>
+  <style>
+    body { background:#F8FAF6; color:#1f2a25; }
+    .ring-track { stroke:#e4ece7; } .ring-fill { stroke:#174B38; transition: stroke-dashoffset .6s ease; }
+    .bar-fill { transition: width .5s ease; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    :focus-visible { outline: 3px solid #174B38; outline-offset: 2px; }
+  </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+{% if nav %}
+<aside class="hidden md:flex fixed inset-y-0 left-0 w-60 flex-col bg-white border-r border-sage-100 p-5 z-30">
+  <a href="{% url 'nt_dashboard' %}" class="text-xl font-semibold text-forest mb-8">NutriTrack<span class="text-sage"> AI</span></a>
+  <nav class="space-y-1 flex-1" aria-label="Main">
+    {% for label, url_name, icon in nav %}
+      {% if url_name %}
+        <a href="{% url url_name %}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium {% if active == icon or active == label|lower %}bg-forest text-white{% else %}text-ink hover:bg-forest-50{% endif %}">{{ label }}</a>
+      {% else %}
+        <span aria-disabled="true" class="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-mute cursor-not-allowed">{{ label }}<span class="text-[10px] uppercase tracking-wide bg-sage-100 rounded-full px-2 py-0.5">Soon</span></span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  <div class="text-sm border-t border-sage-100 pt-4 space-y-2">
+    <a href="{% url 'nt_targets' %}" class="block text-mute hover:text-forest">Targets &amp; settings</a>
+    <a href="{% url 'workout_history' %}" class="block text-mute hover:text-forest">Workout tools</a>
+    <a href="{% url 'logout' %}" class="block text-mute hover:text-forest">Log out</a>
+  </div>
+</aside>
+{% with mobile_items=nav|slice:':4' %}
+<nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-sage-100 z-30 grid grid-cols-5" aria-label="Main">
+  {% for label, url_name, icon in mobile_items %}
+    {% if url_name %}
+      <a href="{% url url_name %}" class="py-3 text-center text-[11px] font-medium {% if active == icon or active == label|lower %}text-forest border-t-2 border-forest{% else %}text-mute{% endif %}">{{ label }}</a>
+    {% else %}
+      <span aria-disabled="true" class="py-3 text-center text-[11px] text-sage">{{ label }}</span>
+    {% endif %}
+  {% endfor %}
+  {% if nav|length > 4 %}
+    <a href="{% url 'nt_exercises' %}" class="py-3 text-center text-[11px] font-medium {% if active == 'dumbbell' %}text-forest border-t-2 border-forest{% else %}text-mute{% endif %}">More</a>
+  {% endif %}
+</nav>
+{% endwith %}
+{% endif %}
+<main class="{% if nav %}md:ml-60 pb-24 md:pb-10{% endif %} px-4 sm:px-8 py-6 max-w-6xl mx-auto">
+  {% if messages %}
+    <div class="space-y-2 mb-4" role="status" aria-live="polite">
+    {% for m in messages %}
+      <div class="rounded-xl px-4 py-3 text-sm {% if m.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-forest-50 text-forest border border-sage-200{% endif %}">{{ m }}</div>
+    {% endfor %}
+    </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>

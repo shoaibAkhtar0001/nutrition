@@ -1,0 +1,38 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('onboarding/', views.onboarding, name='nt_onboarding'),
+    path('settings/targets/', views.targets, name='nt_targets'),
+    path('plan/', views.plan, name='nt_plan'),
+    path('exercises/', views.exercises, name='nt_exercises'),
+    path('exercises/<slug:slug>/', views.exercise_detail, name='nt_exercise_detail'),
+    path('exercises/<slug:slug>/progress/', views.exercise_progress, name='nt_exercise_progress'),
+    path('exercises/<slug:slug>/start/', views.start_exercise_session, name='nt_start_exercise_session'),
+    path('exercises/<slug:slug>/save/', views.save_workout_exercise, name='nt_save_workout_exercise'),
+    path('workouts/', views.workouts, name='nt_workouts'),
+    path('workouts/new/', views.create_workout_plan, name='nt_create_workout_plan'),
+    path('workouts/session/<int:session_id>/', views.workout_session, name='nt_workout_session'),
+    path('workouts/session/<int:session_id>/summary/', views.workout_summary, name='nt_workout_summary'),
+    path('workouts/history/', views.workout_history, name='workout_history'),
+    path('workouts/history/', views.workout_history, name='nt_workout_history'),
+    path('workouts/<int:plan_pk>/exercise/<int:item_pk>/delete/', views.delete_workout_exercise, name='nt_delete_workout_exercise'),
+    path('ai-coach/', views.ai_coach, name='nt_ai_coach'),
+    path('coach/', views.ai_coach, name='coach'),
+    path('ai-coach/chat/', views.ai_chat_api, name='nt_ai_chat_api'),
+    path('ai-coach/clear/', views.ai_chat_clear, name='nt_ai_chat_clear'),
+    path('api/v1/ai/chat/', views.ai_chat_api, name='nt_ai_chat_api_v1'),
+    path('progress/', views.progress, name='nt_progress'),
+    path('dashboard/', views.dashboard, name='nt_dashboard'),
+    path('food/', views.journal, name='nt_journal'),
+    path('food/add/', views.entry_add, name='nt_entry_add'),
+    path('food/copy/', views.entry_copy, name='nt_entry_copy'),
+    path('food/entry/<uuid:pk>/edit/', views.entry_edit, name='nt_entry_edit'),
+    path('food/entry/<uuid:pk>/delete/', views.entry_delete, name='nt_entry_delete'),
+    path('food/search/', views.food_search_page, name='nt_food_search'),
+    path('food/item/<uuid:pk>/', views.food_detail, name='nt_food_detail'),
+    path('api/foods/search/', views.food_api_search, name='nt_food_api'),
+    path('water/add/', views.water_add, name='nt_water_add'),
+    path('weight/add/', views.weight_add, name='nt_weight_add'),
+]

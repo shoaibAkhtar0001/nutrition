@@ -1,0 +1,85 @@
+{% extends 'nt/base.html' %}
+{% block title %}Progress · NutriTrack{% endblock %}
+{% block content %}
+<header class="flex items-end justify-between gap-3">
+  <div>
+    <p class="text-sm text-mute">Overview</p>
+    <h1 class="text-2xl font-semibold text-forest">Progress</h1>
+  </div>
+  {% if current_weight %}
+  <div class="rounded-xl bg-white shadow-card px-4 py-2 text-sm text-mute">
+    Current: <span class="font-semibold text-forest">{{ current_weight.weight_kg }} kg</span>
+  </div>
+  {% endif %}
+</header>
+
+<section class="bg-white rounded-card shadow-card p-6 mt-6">
+  <h2 class="font-medium text-forest">Muscle balance</h2>
+  {% if muscle_balance %}
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <div class="rounded-2xl border border-sage-100 bg-forest-50 p-4">
+        <p class="text-xs uppercase tracking-[0.12em] text-mute">Most trained</p>
+        <p class="mt-2 text-xl font-semibold text-forest">{{ most_trained.name }}</p>
+        <p class="mt-1 text-sm text-mute">{{ most_trained.sets }} completed sets across {{ most_trained.sessions }} sessions</p>
+      </div>
+      <div class="rounded-2xl border border-sage-100 bg-white p-4">
+        <p class="text-xs uppercase tracking-[0.12em] text-mute">Needs attention</p>
+        <p class="mt-2 text-xl font-semibold text-forest">{{ least_trained.name }}</p>
+        <p class="mt-1 text-sm text-mute">{{ least_trained.sets }} completed sets so far</p>
+      </div>
+    </div>
+    <div class="mt-5 space-y-3">
+      {% for item in muscle_balance %}
+      <div>
+        <div class="mb-1 flex items-center justify-between text-sm">
+          <span class="font-medium text-ink">{{ item.name }}</span>
+          <span class="text-mute">{{ item.sets }} sets</span>
+        </div>
+        <div class="h-2.5 overflow-hidden rounded-full bg-sage-100">
+          <div class="h-full rounded-full bg-forest" style="width: {{ item.pct }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-4 rounded-2xl border border-dashed border-sage-200 bg-forest-50 p-5 text-sm text-mute">
+      Complete a workout to unlock your muscle balance summary.
+    </div>
+  {% endif %}
+</section>
+
+<section class="bg-white rounded-card shadow-card p-6 mt-6">
+  <h2 class="font-medium text-forest">Last 7 days</h2>
+  <div class="mt-5 grid grid-cols-7 gap-3 items-end min-h-[180px]">
+    {% for day in history %}
+    <div class="text-center">
+      <div class="flex h-28 items-end justify-center">
+        <div class="w-full mx-auto rounded-t-xl bg-sage-100" style="height: {{ day.pct|floatformat:0 }}%; min-height: 8px; max-height: 100%; background: linear-gradient(180deg, #174B38 0%, #8aa596 100%);"
+             aria-label="{{ day.kcal|floatformat:0 }} kcal on {{ day.date|date:'D, j M' }}"></div>
+      </div>
+      <div class="mt-2 text-[10px] text-mute">{{ day.date|date:"D"|slice:":1" }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="bg-white rounded-card shadow-card p-6 mt-6">
+  <h2 class="font-medium text-forest">Daily detail</h2>
+  <div class="mt-4 space-y-3">
+    {% for day in history %}
+    <div class="grid grid-cols-[110px_1fr_120px] gap-3 items-center rounded-2xl border border-sage-100 px-3 py-2 text-sm">
+      <div class="font-medium text-ink">{{ day.date|date:"d M" }}</div>
+      <div class="flex items-center gap-3">
+        <span class="text-mute">{{ day.kcal|floatformat:0 }} kcal</span>
+        <div class="flex-1 h-2 rounded-full bg-sage-100 overflow-hidden">
+          <div class="h-full rounded-full bg-forest" style="width: {{ day.pct|floatformat:0 }}%"></div>
+        </div>
+      </div>
+      <div class="text-right text-mute">
+        {% if day.weight %}{{ day.weight }} kg{% else %}—{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

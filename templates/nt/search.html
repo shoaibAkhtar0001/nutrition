@@ -1,0 +1,27 @@
+{% extends 'nt/base.html' %}
+{% block title %}Indian food database · NutriTrack{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold text-forest">Indian food database</h1>
+<p class="text-sm text-mute mt-1 max-w-2xl">Values are per 100 g (or 100 ml) of the prepared food. The starter catalogue contains <strong>estimates, not laboratory data</strong>; each food shows its source.</p>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <label class="sr-only" for="q">Search foods</label>
+  <input id="q" name="q" value="{{ q }}" placeholder="Search by name or local name" class="flex-1 min-w-[12rem] rounded-xl border border-sage-200 px-3 py-2 text-sm">
+  <label class="sr-only" for="cat">Category</label>
+  <select id="cat" name="category" class="rounded-xl border border-sage-200 px-3 py-2 text-sm"><option value="">All categories</option>
+    {% for k, l in categories %}<option value="{{ k }}" {% if k == category %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <button class="rounded-xl bg-forest text-white px-4 py-2 text-sm">Search</button>
+</form>
+{% if results %}
+<ul class="mt-5 grid md:grid-cols-2 gap-3">
+  {% for f, bad in results %}
+  <li><a href="{% url 'nt_food_detail' f.pk %}" class="block bg-white rounded-card shadow-card p-4 hover:bg-forest-50 {% if bad %}opacity-70{% endif %}">
+    <div class="flex justify-between gap-3"><span class="font-medium">{{ f.name }}</span><span class="text-sm text-mute whitespace-nowrap">{{ f.kcal|floatformat:0 }} kcal</span></div>
+    <div class="text-xs text-mute mt-1">{{ f.get_category_display }} · P {{ f.protein_g|floatformat:1 }} · C {{ f.carbs_g|floatformat:1 }} · F {{ f.fat_g|floatformat:1 }} · Fibre {{ f.fibre_g|floatformat:1 }} per 100 {{ f.base_unit }}</div>
+    {% if bad %}<div class="text-xs text-amber-800 mt-1">Not suitable for you: {{ bad.0 }}</div>{% endif %}
+  </a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="mt-8 bg-white rounded-card shadow-card p-8 text-center text-sm text-mute">No foods matched{% if q %} “{{ q }}”{% endif %}. Try a different spelling, a regional name, or another category.</div>
+{% endif %}
+{% endblock %}

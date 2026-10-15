@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriTrack - Your Fitness Journey Starts Here</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fadeInUp {
+            animation: fadeInUp 1s ease forwards;
+        }
+        .animate-fadeInUp-delay {
+            animation: fadeInUp 1s ease 0.2s forwards;
+            opacity: 0;
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full bg-[#1E40AF] px-6 py-4 shadow-lg z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-white hover:text-white/90 transition-colors">
+                NutriTrack
+            </a>
+            
+            <div class="hidden md:flex space-x-6">
+                <a href="{% url 'login' %}" class="text-white hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+                    Login
+                </a>
+                <a href="{% url 'signup' %}" class="bg-white text-[#1E40AF] hover:bg-white/90 px-6 py-2 rounded-lg font-medium transition-colors">
+                    Sign Up
+                </a>
+            </div>
+
+            <!-- Mobile menu button -->
+            <button class="md:hidden text-white" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 bg-[#1E40AF] rounded-lg shadow-lg absolute left-4 right-4">
+            <div class="flex flex-col space-y-2 p-4">
+                <a href="{% url 'login' %}" class="text-white hover:bg-white/20 px-4 py-2 rounded-lg transition-colors text-center">
+                    Login
+                </a>
+                <a href="{% url 'signup' %}" class="bg-white text-[#1E40AF] hover:bg-white/90 px-4 py-2 rounded-lg font-medium transition-colors text-center">
+                    Sign Up
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen relative">
+        <!-- Background image with overlay -->
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/70 to-[#1E40AF]/70 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+                 alt="Fitness Background" 
+                 class="w-full h-full object-cover"/>
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-20 min-h-screen flex items-center justify-center px-4">
+            <div class="max-w-3xl text-center">
+                <h1 class="text-5xl md:text-6xl font-bold text-white mb-8 animate-fadeInUp">
+                    Transform Your Life Through Fitness
+                </h1>
+                <p class="text-xl md:text-2xl text-white/90 mb-12 animate-fadeInUp-delay max-w-2xl mx-auto">
+                    Join NutriTrack today and discover a personalized journey to better health with our advanced calorie calculator, 
+                    diet planner, workout routines, and progress tracking tools.
+                </p>
+                <div class="space-x-4 animate-fadeInUp-delay">
+                    <a href="{% url 'signup' %}" 
+                       class="inline-block bg-white text-[#1E40AF] hover:bg-white/90 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                        Get Started Free
+                    </a>
+                    <a href="#features" 
+                       class="inline-block border-2 border-white text-white hover:bg-white/10 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-24 bg-gradient-to-b from-white to-gray-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-20">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+                    Everything You Need For Your Fitness Journey
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Comprehensive tools and features designed to help you achieve your health and fitness goals
+                </p>
+            </div>
+            
+            <!-- Feature Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Calorie Calculator -->
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Calorie Calculator" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900">Smart Calorie Calculator</h3>
+                        <p class="text-gray-600 leading-relaxed">Get personalized calorie recommendations based on your goals, activity level, and body composition.</p>
+                    </div>
+                </div>
+
+                <!-- Diet Planner -->
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Diet Planner" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900">Customized Diet Plans</h3>
+                        <p class="text-gray-600 leading-relaxed">Create balanced meal plans tailored to your dietary preferences and nutritional needs.</p>
+                    </div>
+                </div>
+
+                <!-- Workout Planner -->
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Workout Planner" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900">Workout Routines</h3>
+                        <p class="text-gray-600 leading-relaxed">Access professionally designed workout plans for any fitness level and goal.</p>
+                    </div>
+                </div>
+
+                <!-- Nutrition Finder -->
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Nutrition Database" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900">Nutrition Database</h3>
+                        <p class="text-gray-600 leading-relaxed">Extensive database of foods with detailed nutritional information and healthy alternatives.</p>
+                    </div>
+                </div>
+
+                <!-- Exercise Finder -->
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Exercise Library" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900">Exercise Library</h3>
+                        <p class="text-gray-600 leading-relaxed">Comprehensive guide to exercises with proper form demonstrations and variations.</p>
+                    </div>
+                </div>
+
+                <!-- Progress Tracker -->
+                <div class="feature-card bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+                             alt="Progress Tracking" 
+                             class="w-full h-48 object-cover"/>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900">Progress Tracking</h3>
+                        <p class="text-gray-600 leading-relaxed">Track your fitness journey with detailed metrics, charts, and milestone celebrations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="relative py-24 overflow-hidden">
+        <div class="absolute inset-0 bg-[#1E40AF]"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-[#1E40AF] to-blue-800/90"></div>
+        <div class="relative max-w-4xl mx-auto text-center px-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Start Your Fitness Journey?</h2>
+            <p class="text-xl text-white/90 mb-12 max-w-2xl mx-auto">Join thousands of others who have transformed their lives with NutriTrack.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="{% url 'signup' %}" 
+                   class="w-full sm:w-auto inline-block bg-white text-[#1E40AF] hover:bg-white/90 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                    Start Free Trial
+                </a>
+                <a href="#features" 
+                   class="w-full sm:w-auto inline-block border-2 border-white text-white hover:bg-white/10 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

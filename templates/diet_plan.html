@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personalized Diet Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        'primary-dark': '#1d4ed8',
+                        secondary: '#64748b',
+                        background: '#f8fafc',
+                        card: '#ffffff',
+                        text: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-text min-h-screen">
+    <nav class="bg-card fixed w-full top-0 shadow-md z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'dashboard' username=request.user.username %}" class="flex items-center">
+                        <div class="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center text-xl">
+                            🥗
+                        </div>
+                        <span class="ml-3 text-xl font-bold text-primary">NutriTrack</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-8">
+                    <a href="{% url 'dashboard' username=request.user.username %}" class="text-text hover:text-primary font-medium transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="{% url 'logout' %}" class="text-text hover:text-primary font-medium transition-colors">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+        <div class="bg-card rounded-2xl shadow-sm p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-text mb-2">Your Diet Plan</h1>
+                <p class="text-secondary">
+                    <span class="font-semibold">Calories Goal:</span> 
+                    <span>{{ user_calories }} kcal</span>
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                {% for meal, items in diet_plan.items %}
+                    <div class="bg-primary/5 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">{{ meal|capfirst }}</h3>
+                        <ul class="space-y-2">
+                            {% for item in items %}
+                                <li class="flex justify-between items-center">
+                                    <span>{{ item.name }}</span>
+                                    <span class="text-secondary">{{ item.calories }} kcal</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 text-center">
+                <a href="{% url 'workout_form' %}" class="inline-block">
+                    <button class="bg-primary hover:bg-primary-dark text-white font-medium px-6 py-3 rounded-lg transition-colors">
+                        Recommended Workout Plan
+                    </button>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
